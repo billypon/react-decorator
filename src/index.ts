@@ -1,13 +1,13 @@
 import 'reflect-metadata';
 
-const autobindSymbol = Symbol('autobind');
+const symbol = Symbol('autobind');
 
 export function autobind(...params: any[]) {
   return (target: any, propertyKey: string) => {
-    let properties: string[] = Reflect.getMetadata(autobindSymbol, target);
+    let properties: string[] = Reflect.getMetadata(symbol, target);
     if (!properties) {
       properties = [ ];
-      Reflect.defineMetadata(autobindSymbol, properties, target);
+      Reflect.defineMetadata(symbol, properties, target);
       const constructor = target.constructor.__proto__;
       target.constructor.__proto__ = function () {
         constructor.apply(this, arguments);
