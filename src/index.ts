@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 const symbol = Symbol('autobind');
 
-function getProps(target: object, initial?: Property[], callback?: () => void) {
+function getProps(target: object, initial?: Property[], callback?: (target: object, props: Property[]) => void) {
   let props: Property[] = Reflect.getMetadata(symbol, target);
   if (!props) {
     props = initial;
@@ -10,7 +10,7 @@ function getProps(target: object, initial?: Property[], callback?: () => void) {
       Reflect.defineMetadata(symbol, props, target);
     }
     if (callback) {
-      callback();
+      callback(target, props);
     }
   }
   return props
@@ -22,15 +22,20 @@ function bindProps(context: object, props: Property[]) {
   }
 }
 
-export function bind(...params: unknown[]) {
+function hookConstructor(target: any, props: Property[]) {
+  while (!target.__proto__.toString().startsWith('function')) {
+    target = target.__proto__;
+  }
+  const constructor = target.__proto__;
+  target.__proto__ = function () {
+    constructor.apply(this, arguments);
+    bindProps(this, props)
+  }
+}
+
+export function autobind(...params: unknown[]) {
   return (target: any, property: string) => {
-    const props = getProps(target, [ ], () => {
-      const constructor = target.constructor.__proto__;
-      target.constructor.__proto__ = function () {
-        constructor.apply(this, arguments);
-        bindProps(this, props)
-      }
-    });
+    const props = getProps(target.constructor, [ ], hookConstructor);
     props.push({ name: property, params });
   }
 }
