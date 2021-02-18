@@ -22,14 +22,19 @@ function bindProps(context: object, props: Property[]) {
   }
 }
 
-function hookConstructor(target: any, props: Property[]) {
-  while (!target.__proto__.toString().startsWith('function')) {
-    target = target.__proto__;
+function hookConstructor(target: any) {
+  let dest: any = target
+  while (!dest.__proto__.toString().startsWith('function')) {
+    dest = dest.__proto__;
   }
-  const constructor = target.__proto__;
-  target.__proto__ = function () {
-    constructor.apply(this, arguments);
-    bindProps(this, props)
+  if (!(dest.__proto__ as any).__autobind__) {
+    const constructor = dest.__proto__;
+    dest.__proto__ = function () {
+      constructor.apply(this, arguments);
+      const props: Property[] = Reflect.getMetadata(symbol, this.__proto__.constructor);
+      bindProps(this, props);
+    };
+    (dest.__proto__ as any).__autobind__ = true;
   }
 }
 
