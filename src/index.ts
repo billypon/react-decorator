@@ -30,9 +30,10 @@ function hookConstructor(target: any) {
   if (!(dest.__proto__ as any).__autobind__) {
     const constructor = dest.__proto__;
     dest.__proto__ = function () {
-      constructor.apply(this, arguments);
-      const props: Property[] = Reflect.getMetadata(symbol, this.__proto__.constructor);
-      bindProps(this, props);
+      const instance = constructor.apply(this, arguments);
+      const props: Property[] = Reflect.getMetadata(symbol, instance.__proto__.constructor);
+      bindProps(instance, props);
+      return instance;
     };
     (dest.__proto__ as any).__autobind__ = true;
   }
