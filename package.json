@@ -1,7 +1,7 @@
 {
   "name": "@billypon/react-decorator",
   "description": "Utilities for react",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "main": "index.js",
   "scripts": {
     "build": "rm -rf dist && tsc -p .",
